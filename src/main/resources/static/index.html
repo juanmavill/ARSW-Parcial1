@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+	<meta charset="utf-8">
+	<title>Sistema de Turnos</title>
+	<style>
+		body {
+			font-family: Arial;
+			margin: 30px;
+		}
+
+		button {
+			margin-top: 10px;
+		}
+
+		#turnoActual {
+			font-size: 40px;
+			font-weight: bold;
+		}
+	</style>
+</head>
+<body>
+	<h1>Sistema de Turnos</h1>
+
+	<h2>Paciente</h2>
+	<p>Servicio:</p>
+	<input id="servicio" value="General">
+	<br>
+	<button onclick="crearTurno()">Crear turno</button>
+	<p id="miTicket"></p>
+
+	<hr>
+
+	<h2>Recepcion</h2>
+	<p>Turno llamado:</p>
+	<p id="turnoActual">--</p>
+	<button onclick="llamarSiguiente()">Llamar siguiente</button>
+
+	<script>
+		function crearTurno() {
+			var servicio = document.getElementById("servicio").value;
+
+			fetch("/api/tickets", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					service: servicio
+				})
+			})
+				.then(function (respuesta) {
+					return respuesta.json();
+				})
+				.then(function (ticket) {
+					document.getElementById("miTicket").innerText =
+						"Mi ticket es " + ticket.ticketId + " - " + ticket.status;
+				});
+		}
+
+		function llamarSiguiente() {
+			fetch("/api/tickets/call-next", {
+				method: "POST"
+			})
+				.then(function (respuesta) {
+					if (respuesta.ok) {
+						return respuesta.json();
+					}
+					return null;
+				})
+				.then(function (evento) {
+					if (evento != null) {
+						mostrarTurno(evento.ticket);
+					}
+				});
+		}
+
+		function mostrarTurno(ticket) {
+			document.getElementById("turnoActual").innerText = ticket.ticketId;
+		}
+
+		var eventos = new EventSource("/api/tickets/stream");
+
+		eventos.addEventListener("TICKET_CALLED", function (event) {
+			var data = JSON.parse(event.data);
+			mostrarTurno(data.ticket);
+		});
+	</script>
+</body>
+</html>
