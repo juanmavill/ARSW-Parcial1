@@ -59,6 +59,6 @@ java -cp target/classes com.escuelaing.concurrencia.Turnos http://localhost:8080
 Esto generara 50 tickets.
 
 El cliente reporta tickets creados, errores, tiempo total y tiempo promedio por solicitud.
+#Arquiterctura
+<img width="862" height="367" alt="image" src="https://github.com/user-attachments/assets/8a546576-d0e6-4fff-80b6-f4158559514c" />
 
-## Video
-#
